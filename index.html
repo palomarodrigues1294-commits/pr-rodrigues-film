@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>PR Rodrigues Film - Sistema v4.7</title>
+  <style>
+    body {margin:0;font-family:Arial, sans-serif;background:#000;color:#fff;}
+    header {background:#111;color:red;padding:15px;font-size:22px;text-align:center;font-weight:bold;}
+    nav {display:flex;justify-content:center;background:#222;}
+    nav button {flex:1;padding:14px;background:#222;border:none;color:#fff;font-size:16px;cursor:pointer;transition:background 0.3s;}
+    nav button:hover, nav button.active {background:red;color:#fff;}
+    section {display:none;padding:20px;animation:slideUp 0.6s ease;}
+    section.active {display:block;}
+    @keyframes slideUp {from{transform:translateY(50px);opacity:0;} to{transform:translateY(0);opacity:1;}}
+    .card {background:#111;margin:10px 0;padding:15px;border-radius:8px;box-shadow:0 0 8px rgba(255,0,0,0.6);}
+    h2 {color:red;}
+    label {display:block;margin:6px 0 2px;}
+    input, select, textarea {width:100%;padding:8px;margin-bottom:10px;border:none;border-radius:4px;}
+    button.action {background:red;color:#fff;padding:10px 15px;border:none;border-radius:4px;cursor:pointer;}
+    table {width:100%;border-collapse:collapse;margin-top:10px;}
+    th, td {border:1px solid #444;padding:8px;text-align:left;}
+    th {background:#222;}
+    .small-btn {background:#444;color:#fff;padding:5px 8px;border:none;border-radius:3px;margin:2px;cursor:pointer;}
+  </style>
+</head>
+<body>
+  <header>PR Rodrigues Film - Sistema v4.7</header>
+  <nav>
+    <button class="tablink active" onclick="openTab('vendas', this)">📑 Vendas</button>
+    <button class="tablink" onclick="openTab('estoque', this)">📦 Estoque</button>
+    <button class="tablink" onclick="openTab('despesas', this)">💸 Despesas</button>
+    <button class="tablink" onclick="openTab('relatorios', this)">📊 Relatórios</button>
+    <button class="tablink" onclick="openTab('clientes', this)">👥 Clientes</button>
+    <button class="tablink" onclick="openTab('config', this)">⚙️ Config</button>
+  </nav>
+
+  <!-- Vendas -->
+  <section id="vendas" class="active">
+    <h2>📑 Vendas</h2>
+    <div class="card">
+      <label>Nome Cliente</label><input id="cliente">
+      <label>Carro</label><input id="carro">
+      <label>Marca</label><input id="marca">
+      <label>Modelo</label><input id="modelo">
+      <label>Filme usado</label>
+      <select id="filme"></select>
+      <label>Metragem utilizada (m²)</label><input type="number" id="metragem" step="0.01">
+      <label>Mão de obra (R$)</label><input type="number" id="maoObra" step="0.01">
+      <label>Desconto (R$ ou %)</label><input id="desconto">
+      <label>Forma de pagamento</label>
+      <select id="pagamento">
+        <option>Dinheiro</option><option>Pix</option><option>Débito</option><option>Crédito</option>
+      </select>
+      <label>Parcelas</label>
+      <select id="parcelas"><option>1x</option><option>2x</option><option>3x</option><option>4x</option><option>5x</option><option>6x</option><option>12x</option></select>
+      <label>Taxa da máquina (%)</label><input type="number" id="taxa" step="0.1">
+      <button class="action" onclick="salvarVenda()">💾 Salvar Venda</button>
+    </div>
+    <div class="card">
+      <h3>Histórico de Vendas</h3>
+      <table id="tabelaVendas"><tr><th>Cliente</th><th>Carro</th><th>Filme</th><th>Valor</th><th>Ações</th></tr></table>
+    </div>
+    <div class="card">
+      <h3>📝 Orçamento / OS</h3>
+      <button class="action" onclick="imprimirOS()">🖨️ Imprimir</button>
+      <button class="action" onclick="enviarWhatsApp()">📲 WhatsApp</button>
+      <pre id="osTexto"></pre>
+    </div>
+  </section>
+
+  <!-- Estoque -->
+  <section id="estoque">
+    <h2>📦 Estoque</h2>
+    <div class="card">
+      <label>Nome Filme</label><input id="nomeFilme">
+      <label>Preço Rolo (R$)</label><input type="number" id="precoRolo" step="0.01">
+      <label>Largura (m)</label><input type="number" id="largura" step="0.01">
+      <label>Comprimento (m)</label><input type="number" id="comprimento" step="0.01">
+      <button class="action" onclick="salvarEstoque()">💾 Adicionar ao Estoque</button>
+    </div>
+    <div class="card">
+      <h3>Filmes cadastrados</h3>
+      <table id="tabelaEstoque"><tr><th>Filme</th><th>Preço Rolo</th><th>Custo/m²</th><th>Área Total</th><th>Ações</th></tr></table>
+    </div>
+  </section>
+
+  <!-- Despesas -->
+  <section id="despesas">
+    <h2>💸 Despesas</h2>
+    <div class="card">
+      <label>Descrição</label><input id="descDespesa">
+      <label>Valor (R$)</label><input type="number" id="valorDespesa" step="0.01">
+      <button class="action" onclick="salvarDespesa()">💾 Salvar</button>
+    </div>
+    <div class="card">
+      <h3>Lista de Despesas</h3>
+      <table id="tabelaDespesas"><tr><th>Descrição</th><th>Valor</th><th>Ações</th></tr></table>
+    </div>
+  </section>
+
+  <!-- Relatórios -->
+  <section id="relatorios">
+    <h2>📊 Relatórios</h2>
+    <div class="card" id="relatorio"></div>
+  </section>
+
+  <!-- Clientes -->
+  <section id="clientes">
+    <h2>👥 Clientes</h2>
+    <div class="card">
+      <table id="tabelaClientes"><tr><th>Nome</th><th>Contato</th></tr></table>
+    </div>
+  </section>
+
+  <!-- Config -->
+  <section id="config">
+    <h2>⚙️ Configurações</h2>
+    <div class="card">
+      <button class="action" onclick="backup()">💾 Backup</button>
+      <input type="file" id="restoreFile" onchange="restore(event)">
+    </div>
+  </section>
+
+  <script>
+    let vendas=[], estoque=[], despesas=[], clientes=[];
+
+    function openTab(tabId, elm){
+      document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      document.querySelectorAll('.tablink').forEach(b=>b.classList.remove('active'));
+      elm.classList.add('active');
+    }
+
+    function salvarEstoque(){
+      let nome=document.getElementById('nomeFilme').value;
+      let preco=parseFloat(document.getElementById('precoRolo').value||0);
+      let largura=parseFloat(document.getElementById('largura').value||0);
+      let comprimento=parseFloat(document.getElementById('comprimento').value||0);
+      let area=largura*comprimento;
+      let custo=area?preco/area:0;
+      estoque.push({nome,preco,largura,comprimento,area,custo});
+      atualizarEstoque();
+    }
+
+    function atualizarEstoque(){
+      let tabela=document.getElementById('tabelaEstoque');
+      tabela.innerHTML='<tr><th>Filme</th><th>Preço Rolo</th><th>Custo/m²</th><th>Área Total</th><th>Ações</th></tr>';
+      document.getElementById('filme').innerHTML='';
+      estoque.forEach((f,i)=>{
+        document.getElementById('filme').innerHTML+=`<option>${f.nome}</option>`;
+        tabela.innerHTML+=`<tr><td>${f.nome}</td><td>${f.preco.toFixed(2)}</td><td>${f.custo.toFixed(2)}</td><td>${f.area.toFixed(2)}</td><td><button class='small-btn' onclick='removerEstoque(${i})'>Excluir</button></td></tr>`;
+      });
+    }
+
+    function removerEstoque(i){estoque.splice(i,1);atualizarEstoque();}
+
+    function salvarVenda(){
+      let cliente=document.getElementById('cliente').value;
+      let carro=document.getElementById('carro').value;
+      let marca=document.getElementById('marca').value;
+      let modelo=document.getElementById('modelo').value;
+      let filme=document.getElementById('filme').value;
+      let metragem=parseFloat(document.getElementById('metragem').value||0);
+      let maoObra=parseFloat(document.getElementById('maoObra').value||0);
+      let desconto=document.getElementById('desconto').value;
+      let pagamento=document.getElementById('pagamento').value;
+      let parcelas=document.getElementById('parcelas').value;
+      let taxa=parseFloat(document.getElementById('taxa').value||0);
+
+      let item=estoque.find(f=>f.nome===filme);
+      let custoMaterial=item?item.custo*metragem:0;
+      let valorTotal=maoObra+custoMaterial;
+      if(desconto.includes('%')) valorTotal*=1-parseFloat(desconto)/100;
+      else valorTotal-=parseFloat(desconto||0);
+      let taxaValor=valorTotal*(taxa/100);
+      let recebido=valorTotal-taxaValor;
+
+      let venda={cliente,carro,marca,modelo,filme,metragem,maoObra,desconto,pagamento,parcelas,taxa,valorTotal,recebido};
+      vendas.push(venda);
+      clientes.push({nome:cliente,contato:''});
+      atualizarVendas(); atualizarClientes(); gerarRelatorio(); gerarOS(venda);
+    }
+
+    function atualizarVendas(){
+      let tabela=document.getElementById('tabelaVendas');
+      tabela.innerHTML='<tr><th>Cliente</th><th>Carro</th><th>Filme</th><th>Valor</th><th>Ações</th></tr>';
+      vendas.forEach((v,i)=>{
+        tabela.innerHTML+=`<tr><td>${v.cliente}</td><td>${v.carro}</td><td>${v.filme}</td><td>${v.valorTotal.toFixed(2)}</td><td><button class='small-btn' onclick='removerVenda(${i})'>Excluir</button></td></tr>`;
+      });
+    }
+    function removerVenda(i){vendas.splice(i,1);atualizarVendas();gerarRelatorio();}
+
+    function salvarDespesa(){
+      let desc=document.getElementById('descDespesa').value;
+      let valor=parseFloat(document.getElementById('valorDespesa').value||0);
+      despesas.push({desc,valor});
+      atualizarDespesas(); gerarRelatorio();
+    }
+    function atualizarDespesas(){
+      let tabela=document.getElementById('tabelaDespesas');
+      tabela.innerHTML='<tr><th>Descrição</th><th>Valor</th><th>Ações</th></tr>';
+      despesas.forEach((d,i)=>{
+        tabela.innerHTML+=`<tr><td>${d.desc}</td><td>${d.valor.toFixed(2)}</td><td><button class='small-btn' onclick='removerDespesa(${i})'>Excluir</button></td></tr>`;
+      });
+    }
+    function removerDespesa(i){despesas.splice(i,1);atualizarDespesas();gerarRelatorio();}
+
+    function gerarRelatorio(){
+      let receita=vendas.reduce((t,v)=>t+v.valorTotal,0);
+      let recebido=vendas.reduce((t,v)=>t+v.recebido,0);
+      let gastos=despesas.reduce((t,d)=>t+d.valor,0);
+      let lucro=recebido-gastos;
+      document.getElementById('relatorio').innerHTML=`Receita: R$ ${receita.toFixed(2)}<br>Recebido líquido: R$ ${recebido.toFixed(2)}<br>Despesas: R$ ${gastos.toFixed(2)}<br>Lucro Total: R$ ${lucro.toFixed(2)}`;
+    }
+
+    function atualizarClientes(){
+      let tabela=document.getElementById('tabelaClientes');
+      tabela.innerHTML='<tr><th>Nome</th><th>Contato</th></tr>';
+      clientes.forEach(c=>{tabela.innerHTML+=`<tr><td>${c.nome}</td><td>${c.contato}</td></tr>`});
+    }
+
+    function gerarOS(venda){
+      let texto=`ORDEM DE SERVIÇO\\nCliente: ${venda.cliente}\\nCarro: ${venda.carro}\\nFilme: ${venda.filme}\\nMetragem: ${venda.metragem} m²\\nMão de obra: R$ ${venda.maoObra}\\nValor Total: R$ ${venda.valorTotal.toFixed(2)}\\nForma de Pagamento: ${venda.pagamento} ${venda.parcelas}\\nRecebido: R$ ${venda.recebido.toFixed(2)}`;
+      document.getElementById('osTexto').textContent=texto;
+    }
+    function imprimirOS(){window.print();}
+    function enviarWhatsApp(){
+      let texto=document.getElementById('osTexto').textContent;
+      let url=`https://wa.me/?text=${encodeURIComponent(texto)}`;
+      window.open(url,'_blank');
+    }
+
+    function backup(){
+      let data={vendas,estoque,despesas,clientes};
+      let blob=new Blob([JSON.stringify(data)],{type:'application/json'});
+      let a=document.createElement('a');
+      a.href=URL.createObjectURL(blob);
+      a.download='backup.json';
+      a.click();
+    }
+    function restore(e){
+      let file=e.target.files[0];
+      let reader=new FileReader();
+      reader.onload=function(){let data=JSON.parse(reader.result);vendas=data.vendas||[];estoque=data.estoque||[];despesas=data.despesas||[];clientes=data.clientes||[];atualizarEstoque();atualizarVendas();atualizarDespesas();atualizarClientes();gerarRelatorio();};
+      reader.readAsText(file);
+    }
+  </script>
+</body>
+</html>
